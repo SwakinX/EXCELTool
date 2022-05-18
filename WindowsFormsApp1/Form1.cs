@@ -8,29 +8,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Office.Interop.Excel;
+//using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Spire.Xls;
 
 namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-        public class PublicMethod
-        {
-            [DllImport("User32.dll", CharSet = CharSet.Auto)]
-            public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
-            public static void Kill(Microsoft.Office.Interop.Excel.Application excel)
-            {
-                IntPtr t = new IntPtr(excel.Hwnd);//获得这个句柄，具体做用是获得这块内存入口 
-
-                int k = 0;
-                GetWindowThreadProcessId(t, out k);   //获得本进程惟一标志k
-                System.Diagnostics.Process p = System.Diagnostics.Process.GetProcessById(k);   //获得对进程k的引用
-                p.Kill();     //关闭进程k
-            }
-        }
-            public Form1()
+        public Form1()
         {
             InitializeComponent();
         }
@@ -39,18 +26,9 @@ namespace WindowsFormsApp1
         public string folder;
         public string sfolder;
         public List<string> names = new List<string>();
-        public Microsoft.Office.Interop.Excel.Application excel;
+
         Thread th;
         public string delText = "";
-
-        //public string help = "单文件拆分只需要选择保存目录/n批量拆合先选择打开目录和保存目录/n" +
-        //    "拆分需要填表头行数和拆分字段/n合并只需要表头行数/n注意表头行数和要用来拆分字段是否正确！！！/n" +
-        //    "当已做的存放在单独目录下时，可以在文件过滤中输入存放文件夹名，提高计算速度/n" +
-        //    "\"删除\"键删除打开目录下的文件，文件过滤是要保留的文件所在的文件夹名称" +
-        //    "/n====================================================/n";
-        //private delegate void Mydel(string dir);
-        //Mydel del;
-        //private volatile bool canStop = false;
 
         private void button2_Click(object sender, EventArgs e)//单文件拆分
         {
@@ -74,6 +52,7 @@ namespace WindowsFormsApp1
             th = new Thread(delegate () { singleSplit(path); });
             th.IsBackground = true;
             th.Start();
+
             //Mydel del = Split;
             //IAsyncResult iar = del.BeginInvoke(path, null, null);
 
@@ -109,10 +88,10 @@ namespace WindowsFormsApp1
 
         private void button4_Click(object sender, EventArgs e)//批量合并
         {
-            
+            names.Clear();
             bool b1 = string.IsNullOrWhiteSpace(sfolder);
             bool b2 = string.IsNullOrWhiteSpace(folder);
-            if ( b1 || b2 == true)
+            if (b1 || b2 == true)
             {
                 SetText("请选择目录\n");
             }
@@ -122,7 +101,7 @@ namespace WindowsFormsApp1
                 th = new Thread(delegate () { comBox(folder); });
                 th.IsBackground = true;
                 th.Start();
-            } 
+            }
         }
 
         private void button5_Click(object sender, EventArgs e)//批量拆分
@@ -140,7 +119,7 @@ namespace WindowsFormsApp1
                 th = new Thread(delegate () { splitBox(folder); });
                 th.IsBackground = true;
                 th.Start();
-                
+
             }
 
         }
@@ -168,7 +147,7 @@ namespace WindowsFormsApp1
             SetText("Start Combine\n");
             Director(dir);
             SetEable(true);
-            SetText("Combine complete\n=========================================================\n");
+            SetText("\nCombine complete\n=========================================================\n");
         }
 
         private void splitBox(string dir)
@@ -176,15 +155,16 @@ namespace WindowsFormsApp1
             SetText("Start Split\n");
             splitDirector(dir);
             SetEable(true);
-            SetText("Split complete\n=========================================================\n");
+            SetText("\nSplit complete\n=========================================================\n");
         }
 
-        private void singleSplit(string path)
+        private void singleSplit(string p)
         {
-            SetText("Start Split\n");
-            Split(path);
+            SetText("\nStart Split\n");
+            Split(p);
+            path = null;
             SetEable(true);
-            SetText("Split complete\n=========================================================\n");
+            SetText("\nSplit complete\n=========================================================\n");
         }
 
         private void Director(string dir)//合并遍历器
@@ -199,66 +179,56 @@ namespace WindowsFormsApp1
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(delText)|| fsinfo.FullName.Contains(delText))
+                    if (string.IsNullOrWhiteSpace(delText) || fsinfo.FullName.Contains(delText))
                     {
                         calcultin(fsinfo.FullName);
                     }
                 }
             }
-
-
         }
 
         private void calcultin(string dir)//合并计算
         {
-            //canStop = false;
-            excel = new ApplicationClass
-            {
-                ScreenUpdating = false, //停止工作表刷新
-                DisplayAlerts = false
-            };
-            SetText(dir+ "\n");//输出文件的全部路径
-            Workbook workbook = excel.Workbooks.Open(dir);
-            Worksheet sheet = (Worksheet)workbook.ActiveSheet;
+            SetText("\n" + dir + "\n");//输出文件的全部路径
 
-            Range rng = sheet.UsedRange;
-            int lColumn = rng.Columns.Count;//获得最大列数
-            int lRow = rng.Rows.Count;//获得最大行数
-            int b = int.Parse(textBox1.Text);//标题行
-
-            string fname = Path.GetFileNameWithoutExtension(dir);
+            Workbook workbook = new Workbook();//创表格实例
+            workbook.LoadFromFile(dir);//打开表格
+            Worksheet sheet = workbook.ActiveSheet;//提取活动表格
+            int title = int.Parse(textBox1.Text);//标题行
+            string fname = Path.GetFileNameWithoutExtension(dir);//返回文件名
+            string p = sfolder + "\\" + fname + Extension(dir);//保存路径
             bool bb = names.Contains(fname);
+
             if (bb == false)
             {
-                names.Add(fname);//添加不存在的文件名
+                names.Add(fname);//添加到列表
 
-                Workbook workbooknew = excel.Workbooks.Add(Type.Missing);
-                Worksheet sheetnew = (Worksheet)workbooknew.Sheets.Add(Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-                Range range;
-                range = (Range)sheetnew.Cells[1, 1];
-                sheet.Range[sheet.Cells[1, 1], sheet.Cells[lRow, lColumn]].Copy(range);
+                Workbook workbooknew = new Workbook();//创表格实例
+                workbooknew.Version = ExcelVersion.Version2013;
+                workbooknew.Worksheets.Clear();
+                Worksheet sheetnew = workbooknew.Worksheets.Add("sheet1");//选择单元格
+
+                //获取打开表格的全部数据
+                CellRange range = sheet.Range[sheet.FirstRow, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
+                //复制到新建表格
+                range.Copy(sheetnew.Range[1, 1]);
+
                 creatDirctory(sfolder);
-                string p = sfolder + "\\" + fname + Extension(dir);
-                workbooknew.SaveAs(p, XlFileFormat.xlWorkbookDefault);
-                workbooknew.Close();
+                workbooknew.SaveToFile(p, ExcelVersion.Version2010);//保存表格 
+                SetText("sucssus");
             }
             else
             {
-
-                Workbook workbook2 = excel.Workbooks.Open(sfolder + "\\" + fname + Extension(dir));
-                Worksheet sheet1 = (Worksheet)workbook2.ActiveSheet;
-                Range range = sheet1.UsedRange;
-                int Row = range.Rows.Count;//获得最大行数
-                                           //int Column = range.Columns.Count;//获得最大列数
-                range = (Range)sheet1.Cells[Row+1, 1];
-                sheet.Range[sheet.Cells[b+1, 1], sheet.Cells[lRow, lColumn]].Copy(range);
+                Workbook workbook2 = new Workbook();//创建表格实例
+                workbook2.LoadFromFile(p);//打开已有表格
+                Worksheet sheet1 = workbook2.ActiveSheet;
+                //获取打开表格的数据
+                CellRange range = sheet.Range[title + 1, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
+                range.Copy(sheet1.Range[sheet1.LastRow + 1, 1]);
+                sheet1.DefaultRowHeight = 18;
                 workbook2.Save();
-                workbook2.Close();
+                SetText("sucssus");
             }
-            excel.Quit();
-            PublicMethod.Kill(excel);
-            //canStop = true;
-            //System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);//关闭excel进程
         }
 
         private void Split(string dir)//拆分
@@ -266,79 +236,87 @@ namespace WindowsFormsApp1
             //canStop = false;
             string fname = Path.GetFileNameWithoutExtension(dir);
             SetText(dir + "\n");
-            Microsoft.Office.Interop.Excel.Application excel = new ApplicationClass
-            {
-                ScreenUpdating = false, //停止工作表刷新
-                DisplayAlerts = false
-            };
-            Workbook workbook2 = excel.Workbooks.Open(dir);
-            Worksheet sheet2 = (Worksheet)workbook2.ActiveSheet;
 
-            Dictionary<String, Range> dic = new Dictionary<String, Range>();
-            Range rng = sheet2.UsedRange;
-            int lColumn = rng.Columns.Count;//获得最大列数
-            int lRow = rng.Rows.Count;//获得最大行数
+            Workbook workbook2 = new Workbook();//创建表格实例
+            workbook2.LoadFromFile(dir);//打开已有表格
+            Worksheet sheet2 = workbook2.ActiveSheet;
+
+            Dictionary<String, CellRange> dic = new Dictionary<String, CellRange>();
+
+            int lColumn = sheet2.LastColumn;//获得最大列数
+            int lRow = sheet2.LastRow;//获得最大行数
             int b = int.Parse(textBox1.Text);//标题行
-            int c=0;
-            //int c = Convert.ToInt32(textBox2.Text);//分割列
+            int c = 0;//分割列号
+
             for (int i = 1; i <= lRow; i++)
             {
-                string temp = ((Range)sheet2.Cells[1, i]).Text.ToString();
+                string temp = sheet2.Range[1, i].Text.ToString();
                 if (temp == textBox2.Text)
                 {
-                    c = i;break;
+                    c = i; break;//获取分割列
                 }
             }
             b = b + 1;
             SetText("正在处理\n");
             for (int i = b; i < lRow + 1; i++)
             {
-                string h = sheet2.Range[sheet2.Cells[i, c], sheet2.Cells[i, c]].Text.ToString();
-                if (dic.ContainsKey(h))
+                string n;
+                try
                 {
-                    dic[h] = excel.Union(dic[h], sheet2.Range[sheet2.Cells[i, 1], sheet2.Cells[i, lColumn]]);
+                    n = sheet2.Range[i, c].Text.ToString();//获取名称
+                }
+                catch (Exception)
+                {
+                    continue;
+                    throw;
+                }
+                
+                string h = n.Trim();
+                if (string.IsNullOrWhiteSpace(h))
+                {
+                    continue;
+                }
+                if (dic.ContainsKey(h))
+                {  
+                    Workbook workbooknew = new Workbook();//创表格实例
+                    workbooknew.Version = ExcelVersion.Version2013;
+
+                    Worksheet sheetnew = workbooknew.Worksheets[0];//选择单元格
+                    CellRange r = sheetnew.Range["A1"];
+                    
+                    dic[h].Copy(r);
+                    sheet2.Range[i, 1, i, lColumn].Copy(sheetnew.Range[sheetnew.LastRow+1, 1]);
+                    dic[h] = sheetnew.Range[1,1,sheetnew.LastRow,sheetnew.LastColumn];
+                    workbooknew.Dispose();
                 }
                 else
                 {
-                    dic.Add(h, sheet2.Range[sheet2.Cells[i, 1], sheet2.Cells[i, lColumn]]);
+                    dic.Add(h, sheet2.Range[i, 1, i, lColumn]);
                 }
-
             }
 
             for (int i = 0; i < dic.Count; i++)
             {
-
-                Workbook workbooknew = excel.Workbooks.Add(Type.Missing);
-                Worksheet sheetnew = (Worksheet)workbooknew.Sheets.Add(Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-                Range range;
-                range = (Range)sheetnew.Cells[1, 1];
-                sheet2.Range[sheet2.Cells[1, 1], sheet2.Cells[b - 1, lColumn]].Copy(range);
-                range = (Range)sheetnew.Cells[b, 1];
-                //range = (Range)sheetnew.Cells[sheetnew.Range["A65536", "A65536"].End[XlDirection.xlUp].Row, 1];
-                Dictionary<String, Range>.KeyCollection key = dic.Keys;
+                Workbook workbooknew = new Workbook();//创表格实例
+                workbooknew.Version = ExcelVersion.Version2013;
+                workbooknew.Worksheets.Clear();
+                Worksheet sheetnew = workbooknew.Worksheets.Add("sheet1");//选择单元格
+                CellRange range;
+                
+                sheet2.Range[1, 1, b - 1, lColumn].Copy(sheetnew.Range[1, 1]);
+                range = sheetnew.Range[b, 1];
+                Dictionary<String, CellRange>.KeyCollection key = dic.Keys;
                 string k = key.ElementAt(i);
-                if (string.IsNullOrWhiteSpace(k))
-                {
-                    return;
-                }
                 dic[k].Copy(range);
                 string sPath = sfolder + "\\" + "拆分" + "\\" + k;
                 creatDirctory(sPath);
-                //string p = sPath + "\\" + k + "中心线数据" + Extension(dir);
                 string p = sPath + "\\" + fname + Extension(dir);
-                workbooknew.SaveAs(p, XlFileFormat.xlWorkbookDefault);
-                //workbooknew.SaveAs(sPath, XlFileFormat.xlWorkbookDefault);
-                SetText("已完成："+k+"\n");
-                workbooknew.Close();
-            }
-            workbook2.Close();
-            excel.Quit();
-            
-            //System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);
-            PublicMethod.Kill(excel);//关闭excel进程
-            //canStop = true;
+                sheetnew.DefaultRowHeight = 18;
+                workbooknew.SaveToFile(p, ExcelVersion.Version2013);
 
-        } 
+                SetText("已完成：" + k + "\n");  
+            }
+        }
 
         private string Extension(string dir)//判断扩展名
         {
@@ -403,8 +381,6 @@ namespace WindowsFormsApp1
                 th.Abort();
                 richTextBox1.AppendText("操作终止\n");
                 panel1.Enabled = true;
-                //excel.Quit();
-                //PublicMethod.Kill(excel);//关闭excel进程
             }
             catch (Exception)
             {
