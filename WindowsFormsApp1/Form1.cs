@@ -297,7 +297,7 @@ namespace WindowsFormsApp1
                     if (row.Row == last && cr == filters.Range[last,c].NumberText)
                     {
                         row.Copy(sheet.Range[sheet.LastRow + 1, 1]);
-                    }
+                    }//解决最后一行总是被隐藏的问题
                 } //筛选结果保存到表格
                 string k = cr.Trim();
                 string sPath = sfolder + "\\" + "拆分" + "\\" + k;
