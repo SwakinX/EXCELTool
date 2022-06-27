@@ -8,7 +8,7 @@
     <ProjectGuid>{D428EAA4-03F5-4893-93DE-FA1C67DB0E8F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>表格处理工具</RootNamespace>
-    <AssemblyName>表格处理工具 v1.3</AssemblyName>
+    <AssemblyName>表格处理工具 v1.3.1</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

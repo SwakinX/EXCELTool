@@ -243,7 +243,11 @@ namespace WindowsFormsApp1
             int lRow = sheet2.LastRow;//获得最大行数
             int b = int.Parse(textBox1.Text);//标题行
             int c = 0;//分割列号
-
+            if (sheet2.LastRow <= b)
+            {
+                SetText("表格为空\n");
+                return;
+            }
             for (int i = 1; i <= lRow; i++)
             {
                 string temp = sheet2.Range[1, i].Text.ToString();
@@ -255,14 +259,16 @@ namespace WindowsFormsApp1
 
             SetText("正在处理\n");
             //获取名称唯一值
+
             var crs = sheet2.Range[5, c, sheet2.LastRow, c].CellList;
-            string[] arr = new string[crs.Count - 1];
-            for (int i = 1; i < crs.Count; i++)
+            //遍历管道名称
+            string[] arr = new string[crs.Count];
+            for (int i = 0; i < crs.Count; i++)
             {
-                arr[i-1] = crs[i].DisplayedText;
+                arr[i] = crs[i].DisplayedText;
             }
             String[] new_arr = arr.GroupBy(p => p).Select(p => p.Key).ToArray();
-            SetText(new_arr.Length.ToString());
+            SetText("共"+new_arr.Length.ToString()+"条管道\n");
             //创建筛选
             AutoFiltersCollection filters = sheet2.AutoFilters;
             filters.Range = sheet2.Range;
@@ -294,10 +300,10 @@ namespace WindowsFormsApp1
                     {
                         row.Copy(sheet.Range[sheet.LastRow+1, 1]);
                     }
-                    if (row.Row == last && cr == filters.Range[last,c].NumberText)
-                    {
-                        row.Copy(sheet.Range[sheet.LastRow + 1, 1]);
-                    }//解决最后一行总是被隐藏的问题
+                    //if (row.Row == last && cr == filters.Range[last,c].NumberText)
+                    //{
+                    //    row.Copy(sheet.Range[sheet.LastRow + 1, 1]);
+                    //}//解决最后一行总是被隐藏的问题
                 } //筛选结果保存到表格
                 string k = cr.Trim();
                 string sPath = sfolder + "\\" + "拆分" + "\\" + k;
