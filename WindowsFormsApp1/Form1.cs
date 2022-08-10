@@ -165,6 +165,14 @@ namespace WindowsFormsApp1
             SetText("\nCombine complete\n=========================================================\n");
         }
 
+        private void NormalBox(string dir)
+        {
+            SetText("Start Normalization\n");
+            NormalDirector(dir);
+            SetEable(true);
+            SetText("\nNormalization complete\n=========================================================\n");
+        }
+
         private void splitBox(string dir)
         {
             SetText("Start Split\n");
@@ -182,6 +190,25 @@ namespace WindowsFormsApp1
             SetText("\nSplit complete\n=========================================================\n");
         }
 
+        private void NormalDirector(string dir)//合并遍历器
+        {
+            DirectoryInfo d = new DirectoryInfo(dir);
+            FileSystemInfo[] fsinfos = d.GetFileSystemInfos();
+            foreach (FileSystemInfo fsinfo in fsinfos)
+            {
+                if (fsinfo is DirectoryInfo)     //判断是否为文件夹
+                {
+                    NormalDirector(fsinfo.FullName);//递归调用
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(delText) || fsinfo.FullName.Contains(delText))
+                    {
+                        DelHeader(fsinfo.FullName);
+                    }
+                }
+            }
+        }
         private void Director(string dir)//合并遍历器
         {
             DirectoryInfo d = new DirectoryInfo(dir);
@@ -422,6 +449,42 @@ namespace WindowsFormsApp1
                 workbook2.Save();
                 SetText("sucssus");
             }
+        }
+
+        private void DelHeader(string dir)
+        {
+            SetText("\n" + dir + "\t");//输出文件的全部路径
+
+            Workbook workbook = new Workbook();//创表格实例
+            workbook.LoadFromFile(dir);//打开表格
+            Worksheet sheet = workbook.ActiveSheet;//提取活动表格
+            int title = int.Parse(textBox1.Text);//标题行
+            if (sheet.LastRow <= title)
+            {
+                SetText("表为空");
+                return;
+            }
+            string fname = Path.GetFileNameWithoutExtension(dir);//返回文件名
+            string p = sfolder + "\\" + "标准化" + "\\" + fname + ".csv";//保存路径
+
+            Workbook workbooknew = new Workbook();//创表格实例
+            workbooknew.Version = ExcelVersion.Version2013;
+            workbooknew.Worksheets.Clear();
+            Worksheet sheetnew = workbooknew.Worksheets.Add("sheet1");//选择单元格
+            sheetnew.DefaultRowHeight = 18;
+            //获取打开表格的全部数据
+            CellRange range = sheet.Range[sheet.FirstRow, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
+            //复制到新建表格
+            range.Copy(sheetnew.Range[1, 1]);
+            //删除除第一行外的表头
+            for (int i = 1; i < title; i++)
+            {
+                sheetnew.DeleteRow(2);
+            }
+            creatDirctory(sfolder);
+            sheetnew.SaveToFile(p, ",",Encoding.UTF8);//保存表格 
+            SetText("sucssus");
+            
         }
 
         private string Extension(string dir)//判断扩展名
@@ -713,6 +776,24 @@ namespace WindowsFormsApp1
             sw.Close();
             fs.Close();
             SetText("保存成功！\n");
+        }
+
+        private void 保留首行表头ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            names.Clear();
+            bool b1 = string.IsNullOrWhiteSpace(sfolder);
+            bool b2 = string.IsNullOrWhiteSpace(folder);
+            if (b1 || b2 == true)
+            {
+                SetText("请选择目录\n");
+            }
+            else
+            {
+                panel1.Enabled = false;
+                th = new Thread(delegate () { NormalBox(folder); });
+                th.IsBackground = true;
+                th.Start();
+            }
         }
     }
 }
