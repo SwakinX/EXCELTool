@@ -12,20 +12,25 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Spire.Xls;
 using Spire.Xls.Collections;
+using 表格处理工具;
+using Sunny.UI;
 
 namespace WindowsFormsApp1
 {
-    public partial class Form1 : Form
+    public partial class Form1 : UIForm
     {
         public Form1()
         {
             InitializeComponent();
+            frm1 = this;
         }
+        public static Form1 frm1;
 
         public string path;
         public string folder;
         public string sfolder;
         public List<string> names = new List<string>();
+        public Replace replace=new Replace();
 
         Thread th;
         public string delText = "";
@@ -61,7 +66,7 @@ namespace WindowsFormsApp1
             if (ofolder.ShowDialog() == DialogResult.OK)
             {
                 folder = ofolder.SelectedPath.ToString();
-                textBox3.Text = folder;
+                uiTextBox3.Text = folder;
             }
             if (string.IsNullOrEmpty(ofolder.SelectedPath))
             {
@@ -74,7 +79,7 @@ namespace WindowsFormsApp1
             FolderBrowserDialog ofolder = new FolderBrowserDialog();
             if (ofolder.ShowDialog() == DialogResult.OK)
             {
-                textBox4.Text = ofolder.SelectedPath.ToString();
+                uiTextBox4.Text = ofolder.SelectedPath.ToString();
             }
             if (string.IsNullOrEmpty(ofolder.SelectedPath))
             {
@@ -255,7 +260,7 @@ namespace WindowsFormsApp1
             Workbook workbook = new Workbook();//创表格实例
             workbook.LoadFromFile(dir);//打开表格
             Worksheet sheet = workbook.ActiveSheet;//提取活动表格
-            int title = int.Parse(textBox1.Text);//标题行
+            int title = int.Parse(uiTextBox1.Text);//标题行
             if (sheet.LastRow<=title)
             {
                 SetText("表为空");
@@ -311,7 +316,7 @@ namespace WindowsFormsApp1
 
             int lColumn = sheet2.LastColumn;//获得最大列数
             int lRow = sheet2.LastRow;//获得最大行数
-            int b = int.Parse(textBox1.Text);//标题行
+            int b = int.Parse(uiTextBox1.Text);//标题行
             int c = 0;//分割列号
             if (sheet2.LastRow <= b)
             {
@@ -321,7 +326,7 @@ namespace WindowsFormsApp1
             for (int i = 1; i <= lRow; i++)
             {
                 string temp = sheet2.Range[1, i].Text.ToString();
-                if (temp == textBox2.Text)
+                if (temp == uiTextBox2.Text)
                 {
                     c = i; break;//获取分割列
                 }
@@ -411,7 +416,7 @@ namespace WindowsFormsApp1
             Workbook workbook = new Workbook();//创表格实例
             workbook.LoadFromFile(dir);//打开表格
             Worksheet sheet = workbook.ActiveSheet;//提取活动表格
-            int title = int.Parse(textBox1.Text);//标题行
+            int title = int.Parse(uiTextBox1.Text);//标题行
             if (sheet.LastRow <= title)
             {
                 SetText("表为空");
@@ -451,14 +456,14 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void DelHeader(string dir)
+        private void DelHeader(string dir)//保存为CSV
         {
             SetText("\n" + dir + "\t");//输出文件的全部路径
 
             Workbook workbook = new Workbook();//创表格实例
             workbook.LoadFromFile(dir);//打开表格
             Worksheet sheet = workbook.ActiveSheet;//提取活动表格
-            int title = int.Parse(textBox1.Text);//标题行
+            int title = int.Parse(uiTextBox1.Text);//标题行
             if (sheet.LastRow <= title)
             {
                 SetText("表为空");
@@ -500,7 +505,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void creatDirctory(string dir)//创建不存在的目录
+        public void creatDirctory(string dir)//创建不存在的目录
         {
             if (!Directory.Exists(dir))
             {
@@ -510,27 +515,28 @@ namespace WindowsFormsApp1
 
         private void textBox4_TextChanged(object sender, EventArgs e)//更新目录
         {
-            sfolder = textBox4.Text;
+            sfolder = uiTextBox4.Text;
+            replace.sPath = sfolder;
         }
 
         private void richTextBox1_TextChanged(object sender, EventArgs e)//自动滚动
         {
-            richTextBox1.SelectionStart = richTextBox1.Text.Length;
-            richTextBox1.ScrollToCaret();
+            uiRichTextBox1.SelectionStart = uiRichTextBox1.Text.Length;
+            uiRichTextBox1.ScrollToCaret();
         }
 
         delegate void SafeSetText(string strMsg);
-        private void SetText(string strMsg)//代理文本更新
+        public void SetText(string strMsg)//代理文本更新
         {
             SafeSetText objSet = delegate (string str)
             {
-                richTextBox1.AppendText(str);
+                uiRichTextBox1.AppendText(str);
             };
            this.Invoke(objSet, new object[] { strMsg });
         }
 
         delegate void SafeSetEable(bool strMsg);
-        private void SetEable(bool strMsg)//代理pannel更新
+        public void SetEable(bool strMsg)//代理pannel更新
         {
             SafeSetEable objSet = delegate (bool str)
             {
@@ -548,7 +554,7 @@ namespace WindowsFormsApp1
             try
             {
                 th.Abort();
-                richTextBox1.AppendText("操作终止\n");
+                uiRichTextBox1.AppendText("操作终止\n");
                 panel1.Enabled = true;
             }
             catch (Exception)
@@ -609,7 +615,8 @@ namespace WindowsFormsApp1
 
         private void textBox5_TextChanged(object sender, EventArgs e)
         {
-            delText = textBox5.Text;
+            delText = uiTextBox5.Text;
+            replace.filter = delText;
         }
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)//打开
@@ -618,7 +625,7 @@ namespace WindowsFormsApp1
             if (ofolder.ShowDialog() == DialogResult.OK)
             {
                 folder = ofolder.SelectedPath.ToString();
-                textBox3.Text = folder;
+                uiTextBox3.Text = folder;
             }
             if (string.IsNullOrEmpty(ofolder.SelectedPath))
             {
@@ -631,7 +638,7 @@ namespace WindowsFormsApp1
             FolderBrowserDialog ofolder = new FolderBrowserDialog();
             if (ofolder.ShowDialog() == DialogResult.OK)
             {
-                textBox4.Text = ofolder.SelectedPath.ToString();
+                uiTextBox4.Text = ofolder.SelectedPath.ToString();
             }
             if (string.IsNullOrEmpty(ofolder.SelectedPath))
             {
@@ -771,7 +778,7 @@ namespace WindowsFormsApp1
             //保存内容到txt
             FileStream fs = new FileStream(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\"+ "log " + DateTime.Now.ToString("yyyy-MM-dd HHmmssfff") + ".txt", FileMode.Append);
             StreamWriter sw = new StreamWriter(fs, Encoding.Default);
-            sw.Write(richTextBox1.Text);
+            sw.Write(uiRichTextBox1.Text);
             //释放资源
             sw.Close();
             fs.Close();
@@ -794,6 +801,25 @@ namespace WindowsFormsApp1
                 th.IsBackground = true;
                 th.Start();
             }
+        }
+
+        private void 批量替换ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            replace = new Replace();
+            replace.path = uiTextBox3.Text;
+            replace.sPath = sfolder;
+            replace.title = int.Parse(uiTextBox1.Text);
+            replace.Show();
+        }
+
+        private void uiTextBox3_TextChanged(object sender, EventArgs e)
+        {
+            replace.path = uiTextBox3.Text;
+        }
+
+        private void uiTextBox1_TextChanged(object sender, EventArgs e)
+        {
+            replace.title = int.Parse(uiTextBox1.Text);
         }
     }
 }
