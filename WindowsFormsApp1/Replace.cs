@@ -193,8 +193,12 @@ namespace 表格处理工具
                 CellRange[] ranges = sheet.FindAllString(value, false, false);
                 foreach (var range in ranges)
                 {
-                    range.Text = uiDataGridView1.Rows[i].Cells[1].Value.ToString();
-                    range.Style.Color = Color.Yellow;
+                    if (range.Text==value)
+                    {
+                        range.Text = uiDataGridView1.Rows[i].Cells[1].Value.ToString();
+                        range.Style.Color = Color.Yellow;
+                        
+                    }
                 }
             }
             string fname = Path.GetFileNameWithoutExtension(dir);//返回文件名
