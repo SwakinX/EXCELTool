@@ -12,10 +12,11 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Spire.Xls;
 using Spire.Xls.Collections;
-using 表格处理工具;
+using EXCELProcessing;
 using Sunny.UI;
+using System.Security.Cryptography;
 
-namespace WindowsFormsApp1
+namespace EXCELProcessing
 {
     public partial class Form1 : UIForm
     {
@@ -26,15 +27,17 @@ namespace WindowsFormsApp1
         }
         public static Form1 frm1;
 
-        public string path;
-        public string folder;
-        public string sfolder;
-        public List<string> names = new List<string>();
-        public Replace replace=new Replace();
+        public string path;//单文件路径
+        public string folder;//打开路径
+        public string sfolder;//保存路径
+        public List<string> names = new List<string>();//查分条件储存
+        public Replace replace = new Replace();//替换
+        public bool exten = false;//判断后缀名
+        public bool sway = true;//拆分保存方式
 
-        Thread th;
+        public Thread th;//进程
         public string delText = "";
-        bool exist = false;
+        bool exist = false;//文件存在状态
 
         private void button2_Click(object sender, EventArgs e)//单文件拆分
         {
@@ -54,7 +57,7 @@ namespace WindowsFormsApp1
             {
                 return;
             }
-            panel1.Enabled = false;
+            SetEable(false);
             th = new Thread(delegate () { singleSplit(path); });
             th.IsBackground = true;
             th.Start();
@@ -99,7 +102,7 @@ namespace WindowsFormsApp1
             }
             else
             {
-                panel1.Enabled = false;
+                SetEable(false);
                 th = new Thread(delegate () { comBox(folder); });
                 th.IsBackground = true;
                 th.Start();
@@ -117,7 +120,7 @@ namespace WindowsFormsApp1
             }
             else
             {
-                panel1.Enabled = false;
+                SetEable(false);
                 th = new Thread(delegate () { splitBox(folder); });
                 th.IsBackground = true;
                 th.Start();
@@ -140,6 +143,24 @@ namespace WindowsFormsApp1
                 {
                     Split(fsinfo.FullName);
                     SetText("Split success\n");
+                }
+            }
+        }
+
+        private void splitShhetsDirector(string dir)//sheets拆分遍历器
+        {
+            DirectoryInfo d = new DirectoryInfo(dir);
+            FileSystemInfo[] fsinfos = d.GetFileSystemInfos();
+            foreach (FileSystemInfo fsinfo in fsinfos)
+            {
+                if (fsinfo is DirectoryInfo)     //判断是否为文件夹
+                {
+                    splitDirector(fsinfo.FullName);//递归调用
+                }
+                else
+                {
+                    SplitSheets(fsinfo.FullName);
+                    SetText("\nSplit success\n");
                 }
             }
         }
@@ -182,6 +203,14 @@ namespace WindowsFormsApp1
         {
             SetText("Start Split\n");
             splitDirector(dir);
+            SetEable(true);
+            SetText("\nSplit complete\n=========================================================\n");
+        }
+
+        private void splitSheetsbox(string dir)
+        {
+            SetText("Start Split\n");
+            splitShhetsDirector(dir);
             SetEable(true);
             SetText("\nSplit complete\n=========================================================\n");
         }
@@ -261,13 +290,13 @@ namespace WindowsFormsApp1
             workbook.LoadFromFile(dir);//打开表格
             Worksheet sheet = workbook.ActiveSheet;//提取活动表格
             int title = int.Parse(uiTextBox1.Text);//标题行
-            if (sheet.LastRow<=title)
+            if (sheet.LastRow <= title)
             {
                 SetText("表为空");
                 return;
             }
             string fname = Path.GetFileNameWithoutExtension(dir);//返回文件名
-            string p = sfolder + "\\" + "合并"+ "\\" + fname + Extension(dir);//保存路径
+            string p = sfolder + "\\" + "合并" + "\\" + fname + Extension(dir);//保存路径
             bool bb = names.Contains(fname);
 
             if (bb == false)
@@ -279,6 +308,7 @@ namespace WindowsFormsApp1
                 workbooknew.Worksheets.Clear();
                 Worksheet sheetnew = workbooknew.Worksheets.Add("sheet1");//选择单元格
                 sheetnew.DefaultRowHeight = 18;
+                sheetnew.DefaultColumnWidth = 25;
                 //获取打开表格的全部数据
                 CellRange range = sheet.Range[sheet.FirstRow, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
                 //复制到新建表格
@@ -293,10 +323,11 @@ namespace WindowsFormsApp1
                 workbook2.LoadFromFile(p);//打开已有表格
                 Worksheet sheet1 = workbook2.ActiveSheet;
                 sheet1.DefaultRowHeight = 18;
+                sheet1.DefaultColumnWidth = 25;
                 //获取打开表格的数据
                 CellRange range = sheet.Range[title + 1, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
                 range.Copy(sheet1.Range[sheet1.LastRow + 1, 1]);
-                
+
                 workbook2.Save();
                 SetText("sucssus");
             }
@@ -344,12 +375,12 @@ namespace WindowsFormsApp1
             }
             string[] new_arr = arr.GroupBy(p => p).Select(p => p.Key).ToArray();
             new_arr = new_arr.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
-            SetText("共"+new_arr.Length.ToString()+"条管道\n");
+            SetText("共" + new_arr.Length.ToString() + "条管道\n");
             //创建筛选
             AutoFiltersCollection filters = sheet2.AutoFilters;
             filters.Range = sheet2.Range;
             //filters.Range = sheet2.Range[1, 1, sheet2.LastRow + 1, sheet2.LastColumn];
-            if (new_arr.Length>1)
+            if (new_arr.Length > 1)
             {
                 foreach (string cr in new_arr)
                 {
@@ -387,6 +418,7 @@ namespace WindowsFormsApp1
                     creatDirctory(sPath);
                     string p = sPath + "\\" + fname + Extension(dir);
                     sheet.DefaultRowHeight = 18;
+                    sheet.DefaultColumnWidth = 25;
                     wb.SaveToFile(p, ExcelVersion.Version2013);
 
                     SetText("已完成：" + k + "\n");
@@ -400,13 +432,58 @@ namespace WindowsFormsApp1
                 Worksheet sheet = wb.Worksheets.Add("sheet1");//选择单元格
                 sheet2.Range.Copy(sheet.Range[1, 1]);
                 sheet.DefaultRowHeight = 18;
+                sheet.DefaultColumnWidth = 25;
                 string k = new_arr[0].Trim();
                 string sPath = sfolder + "\\" + "拆分" + "\\" + k;
                 creatDirctory(sPath);
                 string p = sPath + "\\" + fname + Extension(dir);
                 wb.SaveToFile(p, ExcelVersion.Version2013);
             }
+        }
 
+        private void SplitSheets(string dir)//Sheets拆分
+        {
+            Workbook workbook = new Workbook();
+            workbook.LoadFromFile(dir);
+            var Count = workbook.Worksheets.Count();
+            SetText("\n" + dir);
+            string fname = Path.GetFileNameWithoutExtension(dir);
+            for (int i = 0; i < Count; i++)
+            {
+                Worksheet sheet = workbook.Worksheets[i];
+                SetText("\n" + sheet.Name);
+                Workbook newbook = new Workbook();
+                newbook.Worksheets.Clear();
+                Worksheet sheet2 = newbook.Worksheets.AddCopy(sheet);
+                if (sway == true)
+                {
+                    string sp = sfolder + "/" + "Sheets拆分1" + "/" + fname.Trim();
+                    creatDirctory(sp);
+                    string s = sp + "/" + sheet.Name;
+                    if (exten == true)
+                    {
+                        sheet2.SaveToFile(s + ".csv", ",", Encoding.UTF8);
+                    }
+                    else
+                    {
+                        newbook.SaveToFile(s + ".xlsx", ExcelVersion.Version2016);
+                    }
+                }
+                else
+                {
+                    string sp = sfolder + "/" + "Sheets拆分2" + "/" + sheet.Name.Trim();
+                    creatDirctory(sp);
+                    string s = sp + "/" + fname;
+                    if (exten == true)
+                    {
+                        sheet2.SaveToFile(s + ".csv", ",", Encoding.UTF8);
+                    }
+                    else
+                    {
+                        newbook.SaveToFile(s + ".xlsx", ExcelVersion.Version2016);
+                    }
+                }
+            }
         }
 
         private void calcultin1(string dir)//合并为单个文件
@@ -427,12 +504,13 @@ namespace WindowsFormsApp1
 
             if (exist == false)
             {
-                exist = true;                
+                exist = true;
                 Workbook workbooknew = new Workbook();//创表格实例
                 workbooknew.Version = ExcelVersion.Version2013;
                 workbooknew.Worksheets.Clear();
                 Worksheet sheetnew = workbooknew.Worksheets.Add("sheet1");//选择单元格
                 sheetnew.DefaultRowHeight = 18;
+                sheetnew.DefaultColumnWidth = 25;
                 //获取打开表格的全部数据
                 CellRange range = sheet.Range[sheet.FirstRow, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
                 //复制到新建表格
@@ -447,6 +525,7 @@ namespace WindowsFormsApp1
                 workbook2.LoadFromFile(p);//打开已有表格
                 Worksheet sheet1 = workbook2.ActiveSheet;
                 sheet1.DefaultRowHeight = 18;
+                sheet1.DefaultColumnWidth = 25;
                 //获取打开表格的数据
                 CellRange range = sheet.Range[title + 1, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
                 range.Copy(sheet1.Range[sheet1.LastRow + 1, 1]);
@@ -477,6 +556,7 @@ namespace WindowsFormsApp1
             workbooknew.Worksheets.Clear();
             Worksheet sheetnew = workbooknew.Worksheets.Add("sheet1");//选择单元格
             sheetnew.DefaultRowHeight = 18;
+            sheetnew.DefaultColumnWidth = 25;
             //获取打开表格的全部数据
             CellRange range = sheet.Range[sheet.FirstRow, sheet.FirstColumn, sheet.LastRow, sheet.LastColumn];
             //复制到新建表格
@@ -487,9 +567,9 @@ namespace WindowsFormsApp1
                 sheetnew.DeleteRow(2);
             }
             creatDirctory(sfolder);
-            sheetnew.SaveToFile(p, ",",Encoding.UTF8);//保存表格 
+            sheetnew.SaveToFile(p, ",", Encoding.UTF8);//保存表格 
             SetText("sucssus");
-            
+
         }
 
         private string Extension(string dir)//判断扩展名
@@ -516,7 +596,9 @@ namespace WindowsFormsApp1
         private void textBox4_TextChanged(object sender, EventArgs e)//更新目录
         {
             sfolder = uiTextBox4.Text;
-            replace.sPath = sfolder;
+            replace.sPath = uiTextBox4.Text;
+            Properties.Settings.Default.OutputText = uiTextBox4.Text;
+            Properties.Settings.Default.Save();
         }
 
         private void richTextBox1_TextChanged(object sender, EventArgs e)//自动滚动
@@ -532,7 +614,7 @@ namespace WindowsFormsApp1
             {
                 uiRichTextBox1.AppendText(str);
             };
-           this.Invoke(objSet, new object[] { strMsg });
+            this.Invoke(objSet, new object[] { strMsg });
         }
 
         delegate void SafeSetEable(bool strMsg);
@@ -540,12 +622,21 @@ namespace WindowsFormsApp1
         {
             SafeSetEable objSet = delegate (bool str)
             {
-                panel1.Enabled = str;
+                if (str)
+                {
+                    panel1.Enabled = true;
+                    uiButton6.Enabled = false;
+                }
+                else
+                {
+                    panel1.Enabled = false;
+                    uiButton6.Enabled = true;
+                }
             };
             this.Invoke(objSet, new object[] { strMsg });
         }
 
-        private void button6_Click(object sender, EventArgs e)//终止操作
+        public void button6_Click(object sender, EventArgs e)//终止操作
         {
             if (th == null)
             {
@@ -553,15 +644,15 @@ namespace WindowsFormsApp1
             }
             try
             {
+                SetEable(true);
                 th.Abort();
-                uiRichTextBox1.AppendText("操作终止\n");
-                panel1.Enabled = true;
+                uiRichTextBox1.AppendText("\n操作终止\n");
             }
             catch (Exception)
             {
                 throw;
             }
-            
+
         }
 
         private void button7_Click(object sender, EventArgs e)//删除
@@ -569,15 +660,15 @@ namespace WindowsFormsApp1
             bool b2 = string.IsNullOrWhiteSpace(folder);
             if (b2 == true)
             {
-                SetText("请选择目录\n");return;
+                SetText("请选择目录\n"); return;
             }
-            DialogResult result = MessageBox.Show("确定要删除？","请确认", MessageBoxButtons.OKCancel, MessageBoxIcon.Question,MessageBoxDefaultButton.Button2);
-            if (result==DialogResult.OK)
+            DialogResult result = MessageBox.Show("确定要删除？", "请确认", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+            if (result == DialogResult.OK)
             {
                 th = new Thread(delegate () { delBox(folder); });
                 th.IsBackground = true;
                 th.Start();
-            }          
+            }
         }
 
         private void delBox(string path)//删除封装
@@ -600,7 +691,7 @@ namespace WindowsFormsApp1
                 }
                 else
                 {
-                    if (fsinfo.FullName.Contains(delText)&&string.IsNullOrWhiteSpace(delText)==false)
+                    if (fsinfo.FullName.Contains(delText) && string.IsNullOrWhiteSpace(delText) == false)
                     {
                         continue;
                     }
@@ -664,7 +755,7 @@ namespace WindowsFormsApp1
             {
                 return;
             }
-            panel1.Enabled = false;
+            SetEable(false);
             th = new Thread(delegate () { singleSplit(path); });
             th.IsBackground = true;
             th.Start();
@@ -681,7 +772,7 @@ namespace WindowsFormsApp1
             }
             else
             {
-                panel1.Enabled = false;
+                SetEable(false);
                 th = new Thread(delegate () { splitBox(folder); });
                 th.IsBackground = true;
                 th.Start();
@@ -700,7 +791,7 @@ namespace WindowsFormsApp1
             }
             else
             {
-                panel1.Enabled = false;
+                SetEable(false);
                 th = new Thread(delegate () { comBox(folder); });
                 th.IsBackground = true;
                 th.Start();
@@ -717,7 +808,7 @@ namespace WindowsFormsApp1
             }
             else
             {
-                panel1.Enabled = false;
+                SetEable(false);
                 th = new Thread(delegate () { comBox1(folder); });
                 th.IsBackground = true;
                 th.Start();
@@ -726,12 +817,14 @@ namespace WindowsFormsApp1
 
         private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)//退出
         {
-            DialogResult dialogResult = MessageBox.Show("是否退出","退出",MessageBoxButtons.OKCancel,MessageBoxIcon.Information);
+            DialogResult dialogResult = MessageBox.Show("是否退出", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             if (dialogResult == DialogResult.OK)
             {
-                button6_Click(sender, e);
-                Application.Exit();
-            }   
+                //Thread.ResetAbort();
+                //button6_Click(sender, e);
+                Environment.Exit(0);
+                //Application.Exit();
+            }
         }
 
         private void 合并为单个文件选择ToolStripMenuItem_Click(object sender, EventArgs e)//选择文件合并
@@ -748,12 +841,12 @@ namespace WindowsFormsApp1
                 dlg.Filter = "Excel(*.xlsx,*.xls)|*.xlsx;*.xls|all|*.*";
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    panel1.Enabled = false;
+                    SetEable(false);
                     th = new Thread(delegate () { comBox2(dlg.FileNames); });
                     th.IsBackground = true;
                     th.Start();
                 }
-                
+
             }
 
         }
@@ -763,8 +856,9 @@ namespace WindowsFormsApp1
             DialogResult result = MessageBox.Show("确定要退出？", "提示：", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             if (result == DialogResult.OK)
             {
-                button6_Click(sender, e);
-                System.Environment.Exit(0);
+                Environment.Exit(0);
+                //button6_Click(sender, e);
+                //System.Environment.Exit(0);
                 //e.Cancel = false;          //这种也可以
             }
             else
@@ -776,7 +870,7 @@ namespace WindowsFormsApp1
         private void 保存记录ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //保存内容到txt
-            FileStream fs = new FileStream(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\"+ "log " + DateTime.Now.ToString("yyyy-MM-dd HHmmssfff") + ".txt", FileMode.Append);
+            FileStream fs = new FileStream(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "\\" + "log " + DateTime.Now.ToString("yyyy-MM-dd HHmmssfff") + ".txt", FileMode.Append);
             StreamWriter sw = new StreamWriter(fs, Encoding.Default);
             sw.Write(uiRichTextBox1.Text);
             //释放资源
@@ -796,7 +890,7 @@ namespace WindowsFormsApp1
             }
             else
             {
-                panel1.Enabled = false;
+                SetEable(false);
                 th = new Thread(delegate () { NormalBox(folder); });
                 th.IsBackground = true;
                 th.Start();
@@ -815,11 +909,59 @@ namespace WindowsFormsApp1
         private void uiTextBox3_TextChanged(object sender, EventArgs e)
         {
             replace.path = uiTextBox3.Text;
+            folder = uiTextBox3.Text;
+            Properties.Settings.Default.InputText = uiTextBox3.Text;
+            Properties.Settings.Default.Save();
         }
 
         private void uiTextBox1_TextChanged(object sender, EventArgs e)
         {
             replace.title = int.Parse(uiTextBox1.Text);
+        }
+
+        private void 批量拆分工作表ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bool b1 = string.IsNullOrWhiteSpace(sfolder);
+            bool b2 = string.IsNullOrWhiteSpace(folder);
+            if (b1 || b2 == true)
+            {
+                SetText("请选择目录\n");
+                return;
+            }
+            else
+            {
+                DialogResult result = MessageBox.Show("Yes: 以文件名称分文件夹存放\n例如：\\GS1-X5成果\\堡坎.xlsx\nNo: 以表名分文件夹存放\n例如：\\堡坎\\GS1-X5成果.xlsx", "请选择文件保存方式", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                if (result == DialogResult.Yes)
+                {
+                    sway = true;
+                }
+                else
+                {
+                    sway = false;
+                }
+                DialogResult result1 = MessageBox.Show("是否要保存为csv方便矢量化？", "提示：", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+                if (result1 == DialogResult.OK)
+                {
+                    exten = true;
+                }
+                else
+                {
+                    exten = false;
+                }
+                SetEable(false);
+                th = new Thread(delegate () { splitSheetsbox(folder); });
+                th.IsBackground = true;
+                th.Start();
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            uiTextBox3.Text = Properties.Settings.Default.InputText;
+            uiTextBox4.Text = Properties.Settings.Default.OutputText;
+            folder = uiTextBox3.Text;
+            sfolder = uiTextBox4.Text;
+            uiButton6.Enabled = false;
         }
     }
 }
