@@ -1,4 +1,4 @@
-﻿namespace WindowsFormsApp1
+﻿namespace EXCELProcessing
 {
     partial class Form1
     {
@@ -33,7 +33,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.uiButton6 = new Sunny.UI.UIButton();
             this.uiTextBox5 = new Sunny.UI.UITextBox();
             this.uiTextBox4 = new Sunny.UI.UITextBox();
             this.uiTextBox3 = new Sunny.UI.UITextBox();
@@ -45,6 +44,7 @@
             this.uiButton2 = new Sunny.UI.UIButton();
             this.uiButton1 = new Sunny.UI.UIButton();
             this.label3 = new System.Windows.Forms.Label();
+            this.uiButton6 = new Sunny.UI.UIButton();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,6 +54,7 @@
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
+            this.批量拆分工作表ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem9 = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,7 +75,7 @@
             this.label1.Location = new System.Drawing.Point(9, 12);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(92, 27);
+            this.label1.Size = new System.Drawing.Size(74, 21);
             this.label1.TabIndex = 5;
             this.label1.Text = "表头行数";
             // 
@@ -84,13 +85,12 @@
             this.label2.Location = new System.Drawing.Point(9, 50);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(92, 27);
+            this.label2.Size = new System.Drawing.Size(74, 21);
             this.label2.TabIndex = 6;
             this.label2.Text = "拆分字段";
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.uiButton6);
             this.panel1.Controls.Add(this.uiTextBox5);
             this.panel1.Controls.Add(this.uiTextBox4);
             this.panel1.Controls.Add(this.uiTextBox3);
@@ -109,20 +109,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(805, 127);
             this.panel1.TabIndex = 15;
-            // 
-            // uiButton6
-            // 
-            this.uiButton6.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.uiButton6.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.uiButton6.Location = new System.Drawing.Point(702, 85);
-            this.uiButton6.MinimumSize = new System.Drawing.Size(1, 1);
-            this.uiButton6.Name = "uiButton6";
-            this.uiButton6.Size = new System.Drawing.Size(100, 35);
-            this.uiButton6.TabIndex = 22;
-            this.uiButton6.Text = "取消";
-            this.uiButton6.TipsFont = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.uiButton6.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
-            this.uiButton6.Click += new System.EventHandler(this.button6_Click);
             // 
             // uiTextBox5
             // 
@@ -143,6 +129,7 @@
             // uiTextBox4
             // 
             this.uiTextBox4.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.uiTextBox4.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::EXCELProcessing.Properties.Settings.Default, "OutputText", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.uiTextBox4.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.uiTextBox4.Location = new System.Drawing.Point(205, 45);
             this.uiTextBox4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -151,6 +138,7 @@
             this.uiTextBox4.ShowText = false;
             this.uiTextBox4.Size = new System.Drawing.Size(490, 35);
             this.uiTextBox4.TabIndex = 26;
+            this.uiTextBox4.Text = global::EXCELProcessing.Properties.Settings.Default.OutputText;
             this.uiTextBox4.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
             this.uiTextBox4.Watermark = "";
             this.uiTextBox4.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
@@ -159,6 +147,7 @@
             // uiTextBox3
             // 
             this.uiTextBox3.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.uiTextBox3.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::EXCELProcessing.Properties.Settings.Default, "InputText", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.uiTextBox3.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.uiTextBox3.Location = new System.Drawing.Point(205, 4);
             this.uiTextBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -167,6 +156,7 @@
             this.uiTextBox3.ShowText = false;
             this.uiTextBox3.Size = new System.Drawing.Size(490, 35);
             this.uiTextBox3.TabIndex = 25;
+            this.uiTextBox3.Text = global::EXCELProcessing.Properties.Settings.Default.InputText;
             this.uiTextBox3.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
             this.uiTextBox3.Watermark = "";
             this.uiTextBox3.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
@@ -283,9 +273,23 @@
             this.label3.Location = new System.Drawing.Point(9, 89);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(92, 27);
+            this.label3.Size = new System.Drawing.Size(74, 21);
             this.label3.TabIndex = 16;
             this.label3.Text = "文件过滤";
+            // 
+            // uiButton6
+            // 
+            this.uiButton6.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.uiButton6.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.uiButton6.Location = new System.Drawing.Point(706, 155);
+            this.uiButton6.MinimumSize = new System.Drawing.Size(1, 1);
+            this.uiButton6.Name = "uiButton6";
+            this.uiButton6.Size = new System.Drawing.Size(100, 35);
+            this.uiButton6.TabIndex = 22;
+            this.uiButton6.Text = "取消";
+            this.uiButton6.TipsFont = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.uiButton6.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.uiButton6.Click += new System.EventHandler(this.button6_Click);
             // 
             // menuStrip1
             // 
@@ -318,35 +322,35 @@
             this.退出ToolStripMenuItem});
             this.toolStripMenuItem1.Font = new System.Drawing.Font("Microsoft YaHei UI", 10F);
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(58, 27);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(49, 27);
             this.toolStripMenuItem1.Text = "开始";
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.BackColor = System.Drawing.SystemColors.Control;
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(162, 28);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(134, 24);
             this.toolStripMenuItem4.Text = "打开";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.button1_Click);
             // 
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(162, 28);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(134, 24);
             this.toolStripMenuItem5.Text = "保存";
             this.toolStripMenuItem5.Click += new System.EventHandler(this.button3_Click);
             // 
             // 保存记录ToolStripMenuItem
             // 
             this.保存记录ToolStripMenuItem.Name = "保存记录ToolStripMenuItem";
-            this.保存记录ToolStripMenuItem.Size = new System.Drawing.Size(162, 28);
+            this.保存记录ToolStripMenuItem.Size = new System.Drawing.Size(134, 24);
             this.保存记录ToolStripMenuItem.Text = "保存记录";
             this.保存记录ToolStripMenuItem.Click += new System.EventHandler(this.保存记录ToolStripMenuItem_Click);
             // 
             // 退出ToolStripMenuItem
             // 
             this.退出ToolStripMenuItem.Name = "退出ToolStripMenuItem";
-            this.退出ToolStripMenuItem.Size = new System.Drawing.Size(162, 28);
+            this.退出ToolStripMenuItem.Size = new System.Drawing.Size(134, 24);
             this.退出ToolStripMenuItem.Text = "退出";
             this.退出ToolStripMenuItem.Click += new System.EventHandler(this.退出ToolStripMenuItem_Click);
             // 
@@ -354,25 +358,33 @@
             // 
             this.toolStripMenuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem6,
-            this.toolStripMenuItem7});
+            this.toolStripMenuItem7,
+            this.批量拆分工作表ToolStripMenuItem});
             this.toolStripMenuItem2.Font = new System.Drawing.Font("Microsoft YaHei UI", 10F);
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(58, 27);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(49, 27);
             this.toolStripMenuItem2.Text = "拆分";
             // 
             // toolStripMenuItem6
             // 
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(179, 28);
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(176, 24);
             this.toolStripMenuItem6.Text = "单文件拆分";
             this.toolStripMenuItem6.Click += new System.EventHandler(this.button2_Click);
             // 
             // toolStripMenuItem7
             // 
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            this.toolStripMenuItem7.Size = new System.Drawing.Size(179, 28);
+            this.toolStripMenuItem7.Size = new System.Drawing.Size(176, 24);
             this.toolStripMenuItem7.Text = "批量拆分";
             this.toolStripMenuItem7.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // 批量拆分工作表ToolStripMenuItem
+            // 
+            this.批量拆分工作表ToolStripMenuItem.Name = "批量拆分工作表ToolStripMenuItem";
+            this.批量拆分工作表ToolStripMenuItem.Size = new System.Drawing.Size(176, 24);
+            this.批量拆分工作表ToolStripMenuItem.Text = "批量拆分工作表";
+            this.批量拆分工作表ToolStripMenuItem.Click += new System.EventHandler(this.批量拆分工作表ToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
@@ -382,27 +394,27 @@
             this.合并为单个文件选择ToolStripMenuItem});
             this.toolStripMenuItem3.Font = new System.Drawing.Font("Microsoft YaHei UI", 10F);
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(58, 27);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(49, 27);
             this.toolStripMenuItem3.Text = "合并";
             // 
             // toolStripMenuItem8
             // 
             this.toolStripMenuItem8.Name = "toolStripMenuItem8";
-            this.toolStripMenuItem8.Size = new System.Drawing.Size(298, 28);
+            this.toolStripMenuItem8.Size = new System.Drawing.Size(246, 24);
             this.toolStripMenuItem8.Text = "批量合并";
             this.toolStripMenuItem8.Click += new System.EventHandler(this.button4_Click);
             // 
             // toolStripMenuItem9
             // 
             this.toolStripMenuItem9.Name = "toolStripMenuItem9";
-            this.toolStripMenuItem9.Size = new System.Drawing.Size(298, 28);
+            this.toolStripMenuItem9.Size = new System.Drawing.Size(246, 24);
             this.toolStripMenuItem9.Text = "合并为单个文件（文件夹）";
             this.toolStripMenuItem9.Click += new System.EventHandler(this.toolStripMenuItem9_Click);
             // 
             // 合并为单个文件选择ToolStripMenuItem
             // 
             this.合并为单个文件选择ToolStripMenuItem.Name = "合并为单个文件选择ToolStripMenuItem";
-            this.合并为单个文件选择ToolStripMenuItem.Size = new System.Drawing.Size(298, 28);
+            this.合并为单个文件选择ToolStripMenuItem.Size = new System.Drawing.Size(246, 24);
             this.合并为单个文件选择ToolStripMenuItem.Text = "合并为单个文件（选择）";
             this.合并为单个文件选择ToolStripMenuItem.Click += new System.EventHandler(this.合并为单个文件选择ToolStripMenuItem_Click);
             // 
@@ -414,27 +426,27 @@
             this.删除ToolStripMenuItem});
             this.标准化ToolStripMenuItem.Font = new System.Drawing.Font("Microsoft YaHei UI", 10F);
             this.标准化ToolStripMenuItem.Name = "标准化ToolStripMenuItem";
-            this.标准化ToolStripMenuItem.Size = new System.Drawing.Size(75, 27);
+            this.标准化ToolStripMenuItem.Size = new System.Drawing.Size(63, 27);
             this.标准化ToolStripMenuItem.Text = "标准化";
             // 
             // 保留首行表头ToolStripMenuItem
             // 
             this.保留首行表头ToolStripMenuItem.Name = "保留首行表头ToolStripMenuItem";
-            this.保留首行表头ToolStripMenuItem.Size = new System.Drawing.Size(246, 28);
+            this.保留首行表头ToolStripMenuItem.Size = new System.Drawing.Size(202, 24);
             this.保留首行表头ToolStripMenuItem.Text = "保留首行表头转CSV";
             this.保留首行表头ToolStripMenuItem.Click += new System.EventHandler(this.保留首行表头ToolStripMenuItem_Click);
             // 
             // 批量替换ToolStripMenuItem
             // 
             this.批量替换ToolStripMenuItem.Name = "批量替换ToolStripMenuItem";
-            this.批量替换ToolStripMenuItem.Size = new System.Drawing.Size(246, 28);
+            this.批量替换ToolStripMenuItem.Size = new System.Drawing.Size(202, 24);
             this.批量替换ToolStripMenuItem.Text = "批量替换";
             this.批量替换ToolStripMenuItem.Click += new System.EventHandler(this.批量替换ToolStripMenuItem_Click);
             // 
             // 删除ToolStripMenuItem
             // 
             this.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem";
-            this.删除ToolStripMenuItem.Size = new System.Drawing.Size(246, 28);
+            this.删除ToolStripMenuItem.Size = new System.Drawing.Size(202, 24);
             this.删除ToolStripMenuItem.Text = "删除";
             this.删除ToolStripMenuItem.Click += new System.EventHandler(this.button7_Click);
             // 
@@ -466,6 +478,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(815, 698);
+            this.Controls.Add(this.uiButton6);
             this.Controls.Add(this.uiRichTextBox1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.menuStrip1);
@@ -475,9 +488,10 @@
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(746, 488);
             this.Name = "Form1";
-            this.Text = "表格处理工具 v2.0";
+            this.Text = "表格处理工具 v2.1";
             this.ZoomScaleRect = new System.Drawing.Rectangle(19, 19, 746, 488);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
@@ -521,6 +535,7 @@
         private Sunny.UI.UITextBox uiTextBox4;
         private Sunny.UI.UITextBox uiTextBox3;
         public System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ToolStripMenuItem 批量拆分工作表ToolStripMenuItem;
     }
 }
 

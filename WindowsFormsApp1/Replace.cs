@@ -7,13 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using WindowsFormsApp1;
 using Sunny.UI;
 using Spire.Xls;
 using System.IO;
 using System.Threading;
 
-namespace 表格处理工具
+namespace EXCELProcessing
 {
     public partial class Replace : UIForm
     {
