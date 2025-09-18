@@ -488,7 +488,7 @@
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(746, 488);
             this.Name = "Form1";
-            this.Text = "表格处理工具 v2.1";
+            this.Text = "表格处理工具 v2.2";
             this.ZoomScaleRect = new System.Drawing.Rectangle(19, 19, 746, 488);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);

@@ -569,7 +569,6 @@ namespace EXCELProcessing
             creatDirctory(sfolder);
             sheetnew.SaveToFile(p, ",", Encoding.UTF8);//保存表格 
             SetText("sucssus");
-
         }
 
         private string Extension(string dir)//判断扩展名
